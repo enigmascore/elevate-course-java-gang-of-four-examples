@@ -1,76 +1,54 @@
-/*
-    =======================================================================================
-    This code is part of SpotADev.
-
-    SpotADev is e-commerce software for East Africa. SpotADev is a design from JavaSpeak.
-    JavaSpeak is a name given to a collective of developers managed by John Dickerson.
-    
-    The following were the licensors of SpotADev at the time this file was 
-    created / last edited:
-    
-    John Dickerson, Ronald Kasaija, Joel Mumo, Stephen Juma, Stephen Mwanzi, Jackline Gitari, 
-    Samuel Kisilu, Nixon Chebii, Mercy Chepkoech
-    
-    The individual voting rights / control / share of profits to the individual developers 
-    is roughly proportional to their contribution.
-    
-    Additional Licensors may be added to this license if the licensors agree to it based
-    on their voting rights.   In the case that a contributor is to work on the project
-    and not be a licensor they need to sign a waiver that they understand they do not
-    have voting rights, control or a share of profits.  This waiver remains in force
-    until the current licensors agree to add the licensor to this license as a licensor.
-    
-    The SpotADev software has a proprietary license. Please look at or request
-    spotadev_license.txt for further details.
-
-    Copyright (C) 2019 JavaSpeak
-
-    Email:  john.charles.dickerson@gmail.com
-
-    ========================================================================================
-    Author : John Dickerson
-    ========================================================================================
-*/
 package com.javaspeak.designpatterns.go4.structural.proxy;
 
 /**
  * Text book description:
- * <ul>
- *     Proxy: An object representing another object. Provide a surrogate or placeholder for 
- *     another object to control access to it.
- * </ul>
- * The proxy class in this example, TriangleProxy, proxies the TriangleShape Subject.  After 
- * calling drawShape() on the subject it logs to System.out how many times the drawShape() 
- * method has been called
  * <p>
- * The proxy pattern is similar to the decorator pattern.  One of the differences is that with 
- * the Proxy pattern the relationship between a proxy and the subject is usually defined at 
- * compile time, whereas with decorators the relationship between the decorator and the class 
+ * "Proxy: An object representing another object. Provide a surrogate or placeholder for
+ * another object to control access to it."
+ * <p>
+ * The proxy class in this example, TriangleProxy, proxies the Triangle Subject.  After
+ * calling drawShape() on the subject it logs how many times the drawShape() method has been
+ * called.
+ * <p>
+ * The proxy pattern is similar to the decorator pattern.  One of the differences is that with
+ * the Proxy pattern the relationship between a proxy and the subject is usually defined at
+ * compile time, whereas with decorators the relationship between the decorator and the class
  * being decorated can be defined at runtime.
- * <p>
- * In our example the ShapeProxy counts and logs to System.out how many times the drawShape() 
- * method has been called every time it is invoked.
- * <p>
- * @author John Dickerson - 22 Feb 2020
+ *
+ * @author John Dickerson - 22 February 2020
  */
 public class ProxyApplication {
 
-    public void runExample() {
-
-        Shape triangleProxy = new TriangleProxy();
-        triangleProxy.drawShape();
-        triangleProxy.drawShape();
+    /**
+     * Creates the example application.
+     */
+    public ProxyApplication() {
     }
 
 
     /**
-     * Main method
+     * Runs the example: wraps a Triangle in a TriangleProxy and draws it twice through the
+     * proxy.  The proxy logs how many times drawShape() has been invoked.
+     *
+     * @return the shapes drawn by the two calls, as ASCII art
+     */
+    public String runExample() {
+
+        Shape triangleProxy = new TriangleProxy( new Triangle() );
+
+        return triangleProxy.drawShape() + "\n" + triangleProxy.drawShape();
+    }
+
+
+    /**
+     * Main method.
      *
      * @param args
+     *      command line arguments; not used
      */
     public static void main( String[] args ) {
 
         ProxyApplication application = new ProxyApplication();
-        application.runExample();
+        System.out.println( application.runExample() );
     }
 }

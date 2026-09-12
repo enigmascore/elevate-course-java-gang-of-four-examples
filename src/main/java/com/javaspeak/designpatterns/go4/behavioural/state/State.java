@@ -1,57 +1,70 @@
-/*
-    =======================================================================================
-    This code is part of SpotADev.
-
-    SpotADev is e-commerce software for East Africa. SpotADev is a design from JavaSpeak.
-    JavaSpeak is a name given to a collective of developers managed by John Dickerson.
-    
-    The following were the licensors of SpotADev at the time this file was 
-    created / last edited:
-    
-    John Dickerson, Ronald Kasaija, Joel Mumo, Stephen Juma, Stephen Mwanzi, Jackline Gitari, 
-    Samuel Kisilu, Nixon Chebii, Mercy Chepkoech
-    
-    The individual voting rights / control / share of profits to the individual developers 
-    is roughly proportional to their contribution.
-    
-    Additional Licensors may be added to this license if the licensors agree to it based
-    on their voting rights.   In the case that a contributor is to work on the project
-    and not be a licensor they need to sign a waiver that they understand they do not
-    have voting rights, control or a share of profits.  This waiver remains in force
-    until the current licensors agree to add the licensor to this license as a licensor.
-    
-    The SpotADev software has a proprietary license. Please look at or request
-    spotadev_license.txt for further details.
-
-    Copyright (C) 2019 JavaSpeak
-
-    Email:  john.charles.dickerson@gmail.com
-
-    ========================================================================================
-    Author : John Dickerson
-    ========================================================================================
-*/
 package com.javaspeak.designpatterns.go4.behavioural.state;
 
+import java.math.BigDecimal;
 
 /**
- * The AbstractAccountState object which all state objects extend implements this State interface.
+ * The AbstractAccountState class which all state objects extend implements this State interface.
+ * <p>
+ * The interface is sealed: the set of account states is closed (Starter, Standard and Premiere,
+ * all extending AbstractAccountState), which allows callers to switch over the current state
+ * exhaustively using pattern matching.
  *
- * @author John Dickerson - 22 Feb 2020
+ * @author John Dickerson - 22 February 2020
  */
-public interface State {
+public sealed interface State permits AbstractAccountState {
 
-    float getBalance();
+    /**
+     * Returns the current balance of the account.
+     *
+     * @return the current balance
+     */
+    BigDecimal getBalance();
 
 
+    /**
+     * Sets the balance of the account.  Changing the balance never switches the state object:
+     * the account type depends on the annual salary, not on the current balance.
+     *
+     * @param balance
+     *      the new balance
+     */
+    void setBalance( BigDecimal balance );
+
+
+    /**
+     * Sets the annual salary of the account holder.  Depending on the new salary the state
+     * object may ask the StateContext to switch the current state object for another one
+     * (upgrading or downgrading the account).
+     *
+     * @param stateContext
+     *      the StateContext holding the current state object, used to change state
+     *
+     * @param salary
+     *      the new annual salary
+     */
     void setSalary( StateContext stateContext, int salary );
 
 
+    /**
+     * Returns the annual salary of the account holder.
+     *
+     * @return the annual salary
+     */
     int getSalary();
 
 
+    /**
+     * Returns the overdraft limit of this account type.
+     *
+     * @return the overdraft limit
+     */
     int getOverdraft();
 
 
+    /**
+     * Returns the name of this account type.
+     *
+     * @return the account name, e.g. "Starter Account"
+     */
     String getAccountName();
 }

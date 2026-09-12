@@ -1,51 +1,32 @@
-/*
-    =======================================================================================
-    This code is part of SpotADev.
-
-    SpotADev is e-commerce software for East Africa. SpotADev is a design from JavaSpeak.
-    JavaSpeak is a name given to a collective of developers managed by John Dickerson.
-    
-    The following were the licensors of SpotADev at the time this file was 
-    created / last edited:
-    
-    John Dickerson, Ronald Kasaija, Joel Mumo, Stephen Juma, Stephen Mwanzi, Jackline Gitari, 
-    Samuel Kisilu, Nixon Chebii, Mercy Chepkoech
-    
-    The individual voting rights / control / share of profits to the individual developers 
-    is roughly proportional to their contribution.
-    
-    Additional Licensors may be added to this license if the licensors agree to it based
-    on their voting rights.   In the case that a contributor is to work on the project
-    and not be a licensor they need to sign a waiver that they understand they do not
-    have voting rights, control or a share of profits.  This waiver remains in force
-    until the current licensors agree to add the licensor to this license as a licensor.
-    
-    The SpotADev software has a proprietary license. Please look at or request
-    spotadev_license.txt for further details.
-
-    Copyright (C) 2019 JavaSpeak
-
-    Email:  john.charles.dickerson@gmail.com
-
-    ========================================================================================
-    Author : John Dickerson
-    ========================================================================================
-*/
 package com.javaspeak.designpatterns.go4.behavioural.state;
 
+import java.math.BigDecimal;
 
 /**
- * Provides common functionality between all the State implementations
- * 
- * @author John Dickerson - 22 Feb 2020
+ * Provides common functionality between all the State implementations.
+ * <p>
+ * This class is sealed: the closed set of account states is StarterAccountState,
+ * StandardAccountState and PremiereAccountState.  The salary and balance fields are private so
+ * that state can only be changed through the State API.
+ *
+ * @author John Dickerson - 22 February 2020
  */
-public abstract class AbstractAccountState implements State {
+public abstract sealed class AbstractAccountState implements State
+        permits StarterAccountState, StandardAccountState, PremiereAccountState {
 
-    int salary;
-    float balance;
+    private int salary;
+    private BigDecimal balance;
 
-
-    public AbstractAccountState( int salary, float balance ){
+    /**
+     * Creates an account state with the given salary and balance.
+     *
+     * @param salary
+     *      the annual salary of the account holder
+     *
+     * @param balance
+     *      the current balance of the account
+     */
+    protected AbstractAccountState( int salary, BigDecimal balance ) {
 
         this.salary = salary;
         this.balance = balance;
@@ -53,9 +34,16 @@ public abstract class AbstractAccountState implements State {
 
 
     @Override
-    public float getBalance() {
+    public BigDecimal getBalance() {
 
         return balance;
+    }
+
+
+    @Override
+    public void setBalance( BigDecimal balance ) {
+
+        this.balance = balance;
     }
 
 
@@ -66,18 +54,26 @@ public abstract class AbstractAccountState implements State {
     }
 
 
-    public String toString(){
+    /**
+     * Records the new salary in this state object.  Subclasses call this from their
+     * setSalary(..) implementations when the new salary does not cross an account threshold, so
+     * no state transition is needed.
+     *
+     * @param salary
+     *      the new annual salary
+     */
+    protected void retainSalary( int salary ) {
 
-        StringBuffer sb = new StringBuffer();
-        sb.append( "Account Name : " );
-        sb.append( getAccountName() );
-        sb.append( ", Overdraft : " );
-        sb.append( getOverdraft() );
-        sb.append( ", balance : " );
-        sb.append( balance );
-        sb.append( ", salary : " );
-        sb.append( salary );
+        this.salary = salary;
+    }
 
-        return sb.toString();
+
+    @Override
+    public String toString() {
+
+        return "Account Name : " + getAccountName() +
+                ", Overdraft : " + getOverdraft() +
+                ", balance : " + balance +
+                ", salary : " + salary;
     }
 }

@@ -1,51 +1,77 @@
-/*
-    =======================================================================================
-    This code is part of SpotADev.
-
-    SpotADev is e-commerce software for East Africa. SpotADev is a design from JavaSpeak.
-    JavaSpeak is a name given to a collective of developers managed by John Dickerson.
-    
-    The following were the licensors of SpotADev at the time this file was 
-    created / last edited:
-    
-    John Dickerson, Ronald Kasaija, Joel Mumo, Stephen Juma, Stephen Mwanzi, Jackline Gitari, 
-    Samuel Kisilu, Nixon Chebii, Mercy Chepkoech
-    
-    The individual voting rights / control / share of profits to the individual developers 
-    is roughly proportional to their contribution.
-    
-    Additional Licensors may be added to this license if the licensors agree to it based
-    on their voting rights.   In the case that a contributor is to work on the project
-    and not be a licensor they need to sign a waiver that they understand they do not
-    have voting rights, control or a share of profits.  This waiver remains in force
-    until the current licensors agree to add the licensor to this license as a licensor.
-    
-    The SpotADev software has a proprietary license. Please look at or request
-    spotadev_license.txt for further details.
-
-    Copyright (C) 2019 JavaSpeak
-
-    Email:  john.charles.dickerson@gmail.com
-
-    ========================================================================================
-    Author : John Dickerson
-    ========================================================================================
-*/
 package com.javaspeak.designpatterns.go4.structural.flyweight;
 
 /**
- * Abstract class that shapes should extend. Contains a points array where the pixels for the 
- * Shape can be specified.
+ * Abstract class that shapes extend.  A Shape is an immutable flyweight: it holds the pixels
+ * which make up the shape and never exposes its internal array, so a single instance can be
+ * safely shared (read only) between many CanvasElements.
+ * <p>
+ * The pixels are held as an array of arrays.  For example the following is a square:
+ * <pre>
+ *     1111
+ *     1001
+ *     1001
+ *     1111
+ * </pre>
  *
- * @author John Dickerson - 23 Feb 2020
+ * @author John Dickerson - 23 February 2020
  */
-public abstract class Shape {
+public abstract sealed class Shape permits SquareImpl, TriangleImpl {
 
-    // Uses array of arrays.  For example the following is a square
-    //
-    //     1111
-    //     1001
-    //     1001
-    //     1111
-    protected int[][] points;
+    private final int[][] points;
+
+    /**
+     * Copies the given pixels into the shape so that no caller retains a reference to the
+     * shape's internal state.
+     *
+     * @param points
+     *      The pixels making up the shape; a value of 1 means the pixel is set
+     */
+    protected Shape( int[][] points ) {
+
+        this.points = new int[points.length][];
+
+        for ( int y = 0; y < points.length; y++ ) {
+
+            this.points[y] = points[y].clone();
+        }
+    }
+
+
+    /**
+     * Returns the height of the shape in pixels.
+     *
+     * @return the number of pixel rows in the shape
+     */
+    public int getHeight() {
+
+        return points.length;
+    }
+
+
+    /**
+     * Returns the width of the shape in pixels.
+     *
+     * @return the number of pixel columns in the shape
+     */
+    public int getWidth() {
+
+        return points[0].length;
+    }
+
+
+    /**
+     * Reports whether the pixel at the given coordinates is set.
+     *
+     * @param y
+     *      The row of the pixel, 0 being the top row
+     *
+     * @param x
+     *      The column of the pixel, 0 being the leftmost column
+     *
+     * @return true if the pixel is set
+     */
+    public boolean isPixelSet( int y, int x ) {
+
+        return points[y][x] == 1;
+    }
 }

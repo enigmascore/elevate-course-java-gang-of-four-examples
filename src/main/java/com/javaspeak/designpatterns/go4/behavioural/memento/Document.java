@@ -1,74 +1,74 @@
-/*
-    =======================================================================================
-    This code is part of SpotADev.
-
-    SpotADev is e-commerce software for East Africa. SpotADev is a design from JavaSpeak.
-    JavaSpeak is a name given to a collective of developers managed by John Dickerson.
-    
-    The following were the licensors of SpotADev at the time this file was 
-    created / last edited:
-    
-    John Dickerson, Ronald Kasaija, Joel Mumo, Stephen Juma, Stephen Mwanzi, Jackline Gitari, 
-    Samuel Kisilu, Nixon Chebii, Mercy Chepkoech
-    
-    The individual voting rights / control / share of profits to the individual developers 
-    is roughly proportional to their contribution.
-    
-    Additional Licensors may be added to this license if the licensors agree to it based
-    on their voting rights.   In the case that a contributor is to work on the project
-    and not be a licensor they need to sign a waiver that they understand they do not
-    have voting rights, control or a share of profits.  This waiver remains in force
-    until the current licensors agree to add the licensor to this license as a licensor.
-    
-    The SpotADev software has a proprietary license. Please look at or request
-    spotadev_license.txt for further details.
-
-    Copyright (C) 2019 JavaSpeak
-
-    Email:  john.charles.dickerson@gmail.com
-
-    ========================================================================================
-    Author : John Dickerson
-    ========================================================================================
-*/
 package com.javaspeak.designpatterns.go4.behavioural.memento;
 
 /**
- * This interface describes document editing functionality such as saving the document text, font 
+ * This interface describes document editing functionality such as saving the document text, font
  * family and font size.
  * <p>
  * This interface extends the Originator interface which has additional methods like:
  * <pre>
  * {@code
- * public Memento getMemento();
- * public void restoreFromMemento( Memento memento );
+ * Memento getMemento();
+ * void restoreFromMemento( Memento memento );
  * }
  * </pre>
- * The Document interface is implemented by the Originator.  When the getMemento() method is called 
- * on the Document the Document returns a snapshot of its state in a DocumentMemento object.
+ * The Document interface is implemented by the Originator.  When the getMemento() method is
+ * called on the Document the Document returns a snapshot of its state in a DocumentMemento
+ * object.
  * <p>
- * When the restoreFromMemento(..) is called on the Document the Document will roll back its state 
+ * When restoreFromMemento(..) is called on the Document the Document will roll back its state
  * to the state encapsulated in the DocumentMemento object.
  *
- * @author John Dickerson - 22 Feb 2020
+ * @author John Dickerson - 22 February 2020
  */
 public interface Document extends Originator {
 
-    public void saveDocumentText( String documentText );
+    /**
+     * Saves the document text.
+     *
+     * @param documentText
+     *      the text of the document
+     */
+    void saveDocumentText( String documentText );
 
 
-    public String getDocumentText();
+    /**
+     * Returns the current document text.
+     *
+     * @return the current document text
+     */
+    String getDocumentText();
 
 
-    public void saveFontFamily( String fontFamily );
+    /**
+     * Saves the font family used to render the document.
+     *
+     * @param fontFamily
+     *      the font family, e.g. "arial"
+     */
+    void saveFontFamily( String fontFamily );
 
 
-    public String getFontFamily();
+    /**
+     * Returns the current font family.
+     *
+     * @return the current font family
+     */
+    String getFontFamily();
 
 
-    public void saveFontSize( int fontSize );
+    /**
+     * Saves the font size used to render the document.
+     *
+     * @param fontSize
+     *      the font size in points
+     */
+    void saveFontSize( int fontSize );
 
 
-    public int getFontSize();
-
+    /**
+     * Returns the current font size.
+     *
+     * @return the current font size in points
+     */
+    int getFontSize();
 }

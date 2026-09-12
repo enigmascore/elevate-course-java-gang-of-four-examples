@@ -38,7 +38,7 @@ are resolved the Open Questions section is deleted entirely.
   with a known Maven version without a local install.
 - R_1_7: Enable javadoc doclint in the build (add
   `maven-javadoc-plugin`) so the javadoc errors listed in section 6
-  are caught by CI once fixed.
+  are caught by the Maven build once fixed.
 
 ## 2. README & Documentation
 
@@ -61,6 +61,11 @@ are resolved the Open Questions section is deleted entirely.
 ## 3. Code Modernization to Java 25 Idioms
 
 Apply across all 23 pattern packages; representative examples cited.
+
+Modern idioms are to be adopted fully — the repo should show how the
+GoF patterns look in modern Java 25, and the README should note where
+a modern language feature subsumes part of a classic pattern (e.g.
+sealed + switch vs visitor). ( decided by JD, 2026-09-11 )
 
 - R_3_1: Convert pure data-carrier classes to records:
   `command/RequestImpl`, `observer/ObservableEventImpl`,
@@ -142,6 +147,11 @@ Apply across all 23 pattern packages; representative examples cited.
     snapshot is not safely published across threads.
   - `nextLinkedElementUpdater` should be `private static final`.
   - Use `NoSuchElementException` instead of raw `RuntimeException`.
+
+  Decision: fix it properly and keep it, since the README advertises
+  it as the "extra stuff" teaching example — but simplify `remove`
+  semantics if full Harris-style unlinking (deletion-marking) proves
+  too heavy for a course example. ( decided by JD, 2026-09-11 )
 - R_4_2: Fix `iterator/SnapshotIteratorImpl.next()` to throw
   `NoSuchElementException` at exhaustion instead of returning null,
   and make `SnapshotIterable`/`SnapshotIterator` extend
@@ -222,6 +232,13 @@ Apply across all 23 pattern packages; representative examples cited.
   brace style into line (`ChatUserImpl`, `TableElement`), and add an
   `.editorconfig` matching the `docs/eclipse/gangoffour.xml`
   formatter settings.
+- R_5_8: The observer package defines its own `Observable`/`Observer`
+  interfaces whose names shadow the JDK's deprecated
+  `java.util.Observable`/`Observer`. Keep the hand-rolled pattern
+  (that is the point of the example) but rename the interfaces to
+  `Subject`/`Listener` or similar to avoid the name clash, and
+  mention `java.util.concurrent.Flow` in the javadoc as the modern
+  JDK equivalent. ( decided by JD, 2026-09-11 )
 
 ## 6. Javadoc Cleanup
 
@@ -262,7 +279,8 @@ Apply across all 23 pattern packages; representative examples cited.
 - R_7_3: Add genuinely multi-threaded tests for the CAS-based
   `ConcurrentLinkedList` (concurrent add/remove, snapshot isolation
   under concurrent mutation) once R_4_1 is fixed.
-- R_7_4: Run tests in CI via surefire (see R_1_3, R_8_1).
+- R_7_4: Run tests via surefire as part of the standard Maven build
+  (see R_1_3).
 - R_7_5: Use JUnit 5 (Jupiter) as the test framework, replacing
   TestNG 6.9.8. Convert the one existing test, swapping assertion
   arguments (TestNG's `Assert` order is `(actual, expected)` —
@@ -272,44 +290,22 @@ Apply across all 23 pattern packages; representative examples cited.
 
 ## 8. Repo Infrastructure
 
-- R_8_1: Add a GitHub Actions workflow that builds on JDK 25 and
-  runs the tests on every push/PR.
-- R_8_2: Add a `LICENSE` file at repo root. Related: every one of
-  the 142 source files carries the same 33-line proprietary SpotADev
-  license header (naming 9 individuals and a personal email) —
-  ~4,700 lines of boilerplate; see OQ_2.
+- R_8_1: REMOVED — no GitHub Actions / CI is needed for this repo.
+  ( decided by JD, 2026-09-11 )
+- R_8_2: Remove the 33-line proprietary SpotADev license header
+  (naming 9 individuals and a personal email) from all 142 source
+  files — ~4,700 lines of boilerplate. No root `LICENSE` file is
+  needed. ( decided by JD, 2026-09-11 )
 - R_8_3: Tidy `.gitignore`: remove the suspicious `*.` pattern and
   entries for tooling no longer relevant after modernization
   (`.springBeans`); keep IDE/build output entries.
+- R_8_4: Logging: add SLF4J (over a log4j2 backend, matching
+  elevate-boot's convention) for informational/diagnostic messages
+  in non-demo classes (e.g. `ChatUserImpl.receiveMessage`,
+  `ObserverImpl.receiveObservableEvent`, `TriangleProxy`).
+  Drawing/rendering classes return their output as strings rather
+  than printing; only `*Application.main` writes the demo product
+  (ASCII art, rendered HTML) to `System.out`, since that is program
+  output, not logging — this also makes the classes unit-testable
+  (R_7_1). ( decided by JD, 2026-09-11 )
 
-## Open Questions
-
-- OQ_2: What to do with the 33-line SpotADev license header
-  duplicated in all 142 files? Proposal: remove the header from
-  every file and rely on a single root `LICENSE` file (JD to choose
-  the license, e.g. MIT for a teaching repo).
-- OQ_3: How aggressively should the examples adopt modern idioms,
-  given this is a teaching repo? Records/sealed/pattern-matching
-  (section 3) change what the examples teach. Proposal: adopt them
-  fully — the repo should show how the GoF patterns look in modern
-  Java 25, and the README can note where a modern language feature
-  subsumes part of a classic pattern (e.g. sealed + switch vs
-  visitor).
-- OQ_4: Fix or replace the buggy `ConcurrentLinkedList`? Fixing
-  lock-free removal properly requires deletion-marking (Harris
-  algorithm), which is substantial. Proposal: fix it properly and
-  keep it, since the README advertises it as the "extra stuff"
-  teaching example — but simplify `remove` semantics if full
-  Harris-style unlinking proves too heavy for a course example.
-- OQ_5: Logging: library-level classes print via `System.out`
-  (33 files). Proposal: keep plain `System.out` in the
-  `*Application` demo classes (appropriate for runnable examples)
-  but have non-demo classes return/expose their output rather than
-  print, which also makes them testable (R_7_1).
-- OQ_6: The observer package defines its own `Observable`/`Observer`
-  interfaces whose names shadow the JDK's deprecated
-  `java.util.Observable`/`Observer` — confusing but compiles fine.
-  Proposal: keep the hand-rolled pattern (that is the point of the
-  example) but rename to `Subject`/`Listener` or similar to avoid
-  the name clash, and mention `java.util.concurrent.Flow` in the
-  javadoc as the modern JDK equivalent.

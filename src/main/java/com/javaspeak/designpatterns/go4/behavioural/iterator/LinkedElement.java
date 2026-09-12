@@ -1,73 +1,86 @@
-/*
-    =======================================================================================
-    This code is part of SpotADev.
-
-    SpotADev is e-commerce software for East Africa. SpotADev is a design from JavaSpeak.
-    JavaSpeak is a name given to a collective of developers managed by John Dickerson.
-    
-    The following were the licensors of SpotADev at the time this file was 
-    created / last edited:
-    
-    John Dickerson, Ronald Kasaija, Joel Mumo, Stephen Juma, Stephen Mwanzi, Jackline Gitari, 
-    Samuel Kisilu, Nixon Chebii, Mercy Chepkoech
-    
-    The individual voting rights / control / share of profits to the individual developers 
-    is roughly proportional to their contribution.
-    
-    Additional Licensors may be added to this license if the licensors agree to it based
-    on their voting rights.   In the case that a contributor is to work on the project
-    and not be a licensor they need to sign a waiver that they understand they do not
-    have voting rights, control or a share of profits.  This waiver remains in force
-    until the current licensors agree to add the licensor to this license as a licensor.
-    
-    The SpotADev software has a proprietary license. Please look at or request
-    spotadev_license.txt for further details.
-
-    Copyright (C) 2019 JavaSpeak
-
-    Email:  john.charles.dickerson@gmail.com
-
-    ========================================================================================
-    Author : John Dickerson
-    ========================================================================================
-*/
 package com.javaspeak.designpatterns.go4.behavioural.iterator;
 
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.VarHandle;
 
 /**
- * @author John Dickerson - 21 Feb 2020
+ * A node in the {@link ConcurrentLinkedList} chain.  Wraps the element being stored and holds a
+ * reference to the next LinkedElement in the chain.
+ * <p>
+ * Removal is done in two steps: the node is first logically deleted by atomically setting its
+ * {@code deleted} flag (this is the linearization point of a remove), and then unlinked from the
+ * chain physically as a best-effort memory optimisation.  Traversals ignore nodes whose
+ * {@code deleted} flag is set, so correctness never depends on the physical unlink.
+ * <p>
+ * The atomic operations on the volatile fields use {@link VarHandle}s, the modern replacement
+ * for {@code AtomicReferenceFieldUpdater}.  A VarHandle is cheaper than wrapping every node
+ * field in an {@code AtomicReference} because it adds no per-instance object overhead.
+ *
+ * @author John Dickerson - 21 February 2020
  */
-public class LinkedElement<E> implements Cloneable {
+class LinkedElement<E> {
 
-    // This is not populated by add or remove method. It is used for post processing such as when 
-    // creating an SnapshotIterator
-    LinkedElement<E> previousLinkedElement;
+    private static final VarHandle NEXT;
+    private static final VarHandle DELETED;
 
-    // In ConcurrentLinkedList there is a an AtomicReferenceFieldUpdater which is used to update 
-    // this volatile field using CAS
+    static {
+
+        try {
+
+            MethodHandles.Lookup lookup = MethodHandles.lookup();
+
+            NEXT = lookup.findVarHandle(
+                    LinkedElement.class, "nextLinkedElement", LinkedElement.class );
+
+            DELETED = lookup.findVarHandle( LinkedElement.class, "deleted", boolean.class );
+        }
+        catch ( ReflectiveOperationException e ) {
+
+            throw new ExceptionInInitializerError( e );
+        }
+    }
+
+    // The element being stored
+    final E object;
+
+    // The next LinkedElement in the chain; updated atomically via the NEXT VarHandle
     volatile LinkedElement<E> nextLinkedElement;
 
-    // The object
-    E object;
+    // true once the node has been logically removed; set atomically via the DELETED VarHandle
+    volatile boolean deleted;
 
-
-    public LinkedElement( E object ) {
+    LinkedElement( E object ) {
 
         this.object = object;
     }
 
 
-    @Override
-    protected LinkedElement<E> clone() throws CloneNotSupportedException {
+    /**
+     * Atomically marks this node as logically deleted.  Only one thread can win this CAS, which
+     * makes it the linearization point of a remove: whichever thread succeeds owns the removal.
+     *
+     * @return true if this call marked the node; false if another thread already had
+     */
+    boolean markDeleted() {
 
-        // This method is used to clone a chain of LinkedElement to create a Snapshot Iterator
-        LinkedElement<E> clonedLinkedElement = new LinkedElement<E>( object );
+        return DELETED.compareAndSet( this, false, true );
+    }
 
-        if ( nextLinkedElement != null ) {
 
-            clonedLinkedElement.nextLinkedElement = nextLinkedElement.clone();
-        }
+    /**
+     * Atomically replaces this node's next reference, expecting it to still hold the previously
+     * read value.  Used for the best-effort physical unlink of a logically deleted successor.
+     *
+     * @param expectedNext
+     *      the next reference read earlier by the caller
+     *
+     * @param newNext
+     *      the replacement next reference
+     *
+     * @return true if the CAS succeeded
+     */
+    boolean casNext( LinkedElement<E> expectedNext, LinkedElement<E> newNext ) {
 
-        return clonedLinkedElement;
+        return NEXT.compareAndSet( this, expectedNext, newNext );
     }
 }

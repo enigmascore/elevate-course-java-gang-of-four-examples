@@ -1,56 +1,19 @@
-/*
-    =======================================================================================
-    This code is part of SpotADev.
-
-    SpotADev is e-commerce software for East Africa. SpotADev is a design from JavaSpeak.
-    JavaSpeak is a name given to a collective of developers managed by John Dickerson.
-    
-    The following were the licensors of SpotADev at the time this file was 
-    created / last edited:
-    
-    John Dickerson, Ronald Kasaija, Joel Mumo, Stephen Juma, Stephen Mwanzi, Jackline Gitari, 
-    Samuel Kisilu, Nixon Chebii, Mercy Chepkoech
-    
-    The individual voting rights / control / share of profits to the individual developers 
-    is roughly proportional to their contribution.
-    
-    Additional Licensors may be added to this license if the licensors agree to it based
-    on their voting rights.   In the case that a contributor is to work on the project
-    and not be a licensor they need to sign a waiver that they understand they do not
-    have voting rights, control or a share of profits.  This waiver remains in force
-    until the current licensors agree to add the licensor to this license as a licensor.
-    
-    The SpotADev software has a proprietary license. Please look at or request
-    spotadev_license.txt for further details.
-
-    Copyright (C) 2019 JavaSpeak
-
-    Email:  john.charles.dickerson@gmail.com
-
-    ========================================================================================
-    Author : John Dickerson
-    ========================================================================================
-*/
 package com.javaspeak.designpatterns.go4.behavioural.memento;
 
 /**
- * This class describes document editing functionality such as saving the document text, font 
+ * This class describes document editing functionality such as saving the document text, font
  * family and font size.
  * <p>
- * This interface extends the Originator interface which has additional methods like:
- * <pre>
- * {@code
- * public Memento getMemento();
- * public void restoreFromMemento( Memento memento );
- * }
- * </pre>
- * The Document interface is implemented by the Originator.  When the getMemento() method is called 
- * on the Document the Document returns a snapshot of its state in a DocumentMemento object.
+ * This class implements the Document interface which extends the Originator interface with its
+ * getMemento() and restoreFromMemento(..) methods.
  * <p>
- * When the restoreFromMemento(..) is called on the Document the Document will roll back its state 
- * to the state encapsulated in the DocumentMemento object.
+ * When the getMemento() method is called on the Document the Document returns a snapshot of its
+ * state (document text, font family and font size) in a DocumentMemento record.
+ * <p>
+ * When restoreFromMemento(..) is called on the Document the Document will roll back its state
+ * to the state encapsulated in the DocumentMemento record.
  *
- * @author John Dickerson - 22 Feb 2020
+ * @author John Dickerson - 22 February 2020
  */
 public class DocumentImpl implements Document {
 
@@ -59,27 +22,32 @@ public class DocumentImpl implements Document {
     private int fontSize;
 
     /**
-     * Inner class used to create a Memento saving the current state of the document text.  Note 
-     * that the final DocumentMemento has a private constructor and no setters so its state cannot 
-     * be modified after it has been created.
+     * Creates a DocumentImpl with no text, font family or font size set yet.
      */
-    final class DocumentMemento implements Memento {
+    public DocumentImpl() {
 
-        final private String documentMemento;
-
-        private DocumentMemento( String document ) {
-
-            documentMemento = new String( document );
-        }
-
-
-        private String getDocumentText() {
-
-            return documentMemento;
-        }
     }
 
-    // START Document interface methods ============================================================
+
+    /**
+     * Nested record used to create a Memento saving the current state of the document.  Being a
+     * record it is immutable: its state cannot be modified after it has been created.  It is the
+     * only permitted implementation of the sealed Memento interface.
+     *
+     * @param documentText
+     *      the document text at the time the snapshot was taken
+     *
+     * @param fontFamily
+     *      the font family at the time the snapshot was taken
+     *
+     * @param fontSize
+     *      the font size at the time the snapshot was taken
+     */
+    record DocumentMemento(
+            String documentText, String fontFamily, int fontSize ) implements Memento {
+    }
+
+    // START Document interface methods ===========================================================
 
     @Override
     public void saveDocumentText( String documentText ) {
@@ -91,7 +59,7 @@ public class DocumentImpl implements Document {
     @Override
     public String getDocumentText() {
 
-        return this.documentText;
+        return documentText;
     }
 
 
@@ -122,23 +90,32 @@ public class DocumentImpl implements Document {
         return fontSize;
     }
 
-    // END Document interface methods ==============================================================
+    // END Document interface methods =============================================================
 
-    // START Caretaker interface methods ===========================================================
+    // START Originator interface methods =========================================================
 
     @Override
     public Memento getMemento() {
 
-        return new DocumentMemento( documentText );
+        return new DocumentMemento( documentText, fontFamily, fontSize );
     }
 
 
     @Override
     public void restoreFromMemento( Memento memento ) {
 
-        DocumentMemento documentMemento = ( DocumentMemento )memento;
-        this.documentText = documentMemento.getDocumentText();
+        // Memento is sealed, so this record-pattern switch is exhaustive: no default branch and
+        // no unguarded cast is needed.
+        switch ( memento ) {
+
+            case DocumentMemento( String text, String family, int size ) -> {
+
+                this.documentText = text;
+                this.fontFamily = family;
+                this.fontSize = size;
+            }
+        }
     }
 
-    // END Caretaker interface methods =============================================================
+    // END Originator interface methods ===========================================================
 }

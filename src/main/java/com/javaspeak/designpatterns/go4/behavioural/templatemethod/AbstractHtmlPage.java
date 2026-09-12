@@ -1,107 +1,117 @@
-/*
-    =======================================================================================
-    This code is part of SpotADev.
-
-    SpotADev is e-commerce software for East Africa. SpotADev is a design from JavaSpeak.
-    JavaSpeak is a name given to a collective of developers managed by John Dickerson.
-    
-    The following were the licensors of SpotADev at the time this file was 
-    created / last edited:
-    
-    John Dickerson, Ronald Kasaija, Joel Mumo, Stephen Juma, Stephen Mwanzi, Jackline Gitari, 
-    Samuel Kisilu, Nixon Chebii, Mercy Chepkoech
-    
-    The individual voting rights / control / share of profits to the individual developers 
-    is roughly proportional to their contribution.
-    
-    Additional Licensors may be added to this license if the licensors agree to it based
-    on their voting rights.   In the case that a contributor is to work on the project
-    and not be a licensor they need to sign a waiver that they understand they do not
-    have voting rights, control or a share of profits.  This waiver remains in force
-    until the current licensors agree to add the licensor to this license as a licensor.
-    
-    The SpotADev software has a proprietary license. Please look at or request
-    spotadev_license.txt for further details.
-
-    Copyright (C) 2019 JavaSpeak
-
-    Email:  john.charles.dickerson@gmail.com
-
-    ========================================================================================
-    Author : John Dickerson
-    ========================================================================================
-*/
 package com.javaspeak.designpatterns.go4.behavioural.templatemethod;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- * The Template Method Pattern uses an abstract class. The abstract class has a method 
+ * The Template Method Pattern uses an abstract class. The abstract class has a method
  * ( buildPage() ) which calls the abstract methods in the correct order.
  * <p>
  * The implementation of the abstract methods is left to sub classes of the abstract class.
  *
- * @author John Dickerson - 22 Feb 2020
+ * @author John Dickerson - 22 February 2020
  */
 public abstract class AbstractHtmlPage {
 
-    // abstract methods
+    /**
+     * Creates an AbstractHtmlPage.
+     */
+    protected AbstractHtmlPage() {
+
+    }
+
+
+    /**
+     * Provides the title of the page.
+     *
+     * @return the page title
+     */
     public abstract String getTitle();
 
+
+    /**
+     * Provides the header fragment of the page.
+     *
+     * @return the page header html
+     */
     public abstract String getHeader();
 
+
+    /**
+     * Provides the main content of the page.
+     *
+     * @return the page content
+     */
     public abstract String getContent();
 
+
+    /**
+     * Provides the footer of the page.
+     *
+     * @return the page footer
+     */
     public abstract String getFooter();
 
 
     /**
-     * Parses the xml of the document into a LinkedList
+     * Splits the html into a list of tag and text elements.
+     * <p>
+     * Each iteration consumes at least one character of the remaining html, so the loop always
+     * makes progress; malformed input fails fast with a FormatException instead of looping.
      *
-     * @param html 
+     * @param html
      *      html to parse
-     *      
-     * @return LinkedList
-     * 
-     * @throws FormatException 
-     *      FormatException is thrown if the html is not well formed.
+     *
+     * @return the tag and text elements in document order
+     *
+     * @throws FormatException
+     *      if the html is not well formed, e.g. a {@code <} without a closing {@code >}, a
+     *      stray {@code >} with no preceding {@code <}, or a {@code <} opened inside a tag
      */
-    private LinkedList<String> getLinkedList( String html ) throws FormatException {
+    private List<String> getElements( String html ) {
 
-        int start;
-        int end;
+        List<String> elements = new ArrayList<>();
+        String remaining = html;
 
-        LinkedList<String> elements = new LinkedList<String>();
+        while ( !remaining.isEmpty() ) {
 
-        while ( html.length() != 0 ) {
+            int start = remaining.indexOf( '<' );
+            int end = remaining.indexOf( '>' );
 
-            start = html.indexOf( "<" );
-            end = html.indexOf( ">" );
+            if ( start == -1 && end == -1 ) {
+
+                elements.add( remaining );
+                break;
+            }
+
+            if ( start == -1 || ( end != -1 && end < start ) ) {
+
+                throw new FormatException(
+                        "Found > without a preceding < near: \"" + remaining + "\"" );
+            }
+
+            if ( end == -1 ) {
+
+                throw new FormatException(
+                        "Found < but cannot find closing > near: \"" + remaining + "\"" );
+            }
+
+            int nextStart = remaining.indexOf( '<', start + 1 );
+
+            if ( nextStart != -1 && nextStart < end ) {
+
+                throw new FormatException(
+                        "Found < before the previous < was closed with > near: \"" +
+                                remaining.substring( start ) + "\"" );
+            }
 
             if ( start > 0 ) {
 
-                elements.add( html.substring( 0, start ) );
+                elements.add( remaining.substring( 0, start ) );
             }
 
-            if ( start != -1 && end == -1 ) {
-
-                throw new FormatException( "Found < but cannot find closing >" );
-            }
-
-            if ( start != -1 ) {
-
-                elements.add( html.substring( start, end + 1 ) );
-
-                if ( html.length() > end ) {
-
-                    html = html.substring( end + 1 );
-                }
-            }
-            else {
-
-                elements.add( html );
-                html = "";
-            }
+            elements.add( remaining.substring( start, end + 1 ) );
+            remaining = remaining.substring( end + 1 );
         }
 
         return elements;
@@ -111,77 +121,65 @@ public abstract class AbstractHtmlPage {
     /**
      * Build up the String for the tabs
      *
-     * @param level 
+     * @param level
      *      the number of tabs
-     *      
-     * @return 
+     *
+     * @return
      *      the String of spaces representing the tabs
      */
     private String getTab( int level ) {
 
-        StringBuilder sb = new StringBuilder();
-
-        for ( int i = 0; i < level; i++ ) {
-
-            sb.append( "   " );
-        }
-
-        return sb.toString();
+        return "   ".repeat( Math.max( 0, level ) );
     }
 
 
     /**
      * This method formats the html with proper space indents
      *
-     * @param html 
+     * @param html
      *      The html to format
-     *      
-     * @return 
+     *
+     * @return
      *      formatted html with proper indents
-     *      
-     * @throws FormatException 
-     *      FormatException thrown if html not well formed.
+     *
+     * @throws FormatException
+     *      if the html is not well formed
      */
-    private String formatHtml( String html ) throws FormatException {
+    private String formatHtml( String html ) {
 
-        String formattedHtml = html.trim();
-        formattedHtml = formattedHtml.replaceAll( "\n", "" );
-        formattedHtml = formattedHtml.replaceAll( "\t", "" );
+        String strippedHtml = html.trim().replace( "\n", "" ).replace( "\t", "" );
+
         int currentLevel = -1;
-        LinkedList<String> elements = getLinkedList( formattedHtml );
+        List<String> elements = getElements( strippedHtml );
         StringBuilder sb = new StringBuilder();
-        String element;
+        String previousElement = null;
 
-        for ( int i = 0; i < elements.size(); i++ ) {
+        for ( String element : elements ) {
 
-            element = elements.get( i );
+            if ( element.startsWith( "<" ) ) {
 
-            if ( elements.get( i ).startsWith( "<" ) ) {
+                if ( !element.contains( "/" ) ) {
 
-                if ( element.indexOf( "/" ) == -1 ) {
-
-                    if ( !( i > 0 && elements.get( i - 1 ).startsWith( "</" ) ) ) {
+                    if ( previousElement == null || !previousElement.startsWith( "</" ) ) {
 
                         currentLevel++;
                     }
-
-                    sb.append( getTab( currentLevel ) );
-                    sb.append( elements.get( i ) );
                 }
                 else {
 
                     currentLevel--;
-                    sb.append( getTab( currentLevel ) );
-                    sb.append( element );
                 }
             }
             else {
+
                 currentLevel++;
-                sb.append( getTab( currentLevel ) );
-                sb.append( element );
             }
 
-            sb.append( "\n" );
+            sb.append( getTab( currentLevel ) );
+            sb.append( element );
+            sb.append( '\n' );
+
+            previousElement = element;
         }
 
         return sb.toString();
@@ -189,45 +187,36 @@ public abstract class AbstractHtmlPage {
 
 
     /**
-     * This method determines the order which the abstract methods are called
+     * This method determines the order in which the abstract methods are called
      *
-     * @return 
+     * @return
      *      unformatted html
      */
     private String buildPage() {
 
-        StringBuffer sb = new StringBuffer( "<html><head><title>" );
-        sb.append( getTitle() );
-        sb.append( "</title></head><body>" );
-        sb.append( "<table width=\"100%\" cellspacing=\"10\" " );
-        sb.append( "cellpadding=\"10\" ><tr><td>" );
-        sb.append( getHeader() );
-        sb.append( "</td></tr><tr><td>" );
-        sb.append( getTitle() );
-        sb.append( "</td></tr><tr><td>" );
-        sb.append( getContent() );
-        sb.append( "</td></tr><tr><td>" );
-        sb.append( getFooter() );
-        sb.append( "</td></tr>" );
-        sb.append( "</table></body></html>" );
-
-        return sb.toString();
+        return """
+                <html><head><title>%s</title></head><body>
+                <table width="100%%" cellspacing="10" cellpadding="10" ><tr><td>%s</td></tr>
+                <tr><td>%s</td></tr>
+                <tr><td>%s</td></tr>
+                <tr><td>%s</td></tr>
+                </table></body></html>
+                """.formatted( getTitle(), getHeader(), getTitle(), getContent(), getFooter() );
     }
 
 
     /**
      * Gets the formatted html
      *
-     * @return 
-     *      formated html
-     *      
-     * @throws 
-     *      FormatException FormatException is thrown if the html is badly ormed
+     * @return
+     *      formatted html
+     *
+     * @throws FormatException
+     *      if the html is badly formed
      */
-    public String getHtml() throws FormatException {
+    public String getHtml() {
 
         String html = buildPage();
-        String formattedHtml = formatHtml( html );
-        return formattedHtml;
+        return formatHtml( html );
     }
 }

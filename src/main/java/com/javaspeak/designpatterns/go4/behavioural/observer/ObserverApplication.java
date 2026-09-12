@@ -1,119 +1,124 @@
-/*
-    =======================================================================================
-    This code is part of SpotADev.
-
-    SpotADev is e-commerce software for East Africa. SpotADev is a design from JavaSpeak.
-    JavaSpeak is a name given to a collective of developers managed by John Dickerson.
-    
-    The following were the licensors of SpotADev at the time this file was 
-    created / last edited:
-    
-    John Dickerson, Ronald Kasaija, Joel Mumo, Stephen Juma, Stephen Mwanzi, Jackline Gitari, 
-    Samuel Kisilu, Nixon Chebii, Mercy Chepkoech
-    
-    The individual voting rights / control / share of profits to the individual developers 
-    is roughly proportional to their contribution.
-    
-    Additional Licensors may be added to this license if the licensors agree to it based
-    on their voting rights.   In the case that a contributor is to work on the project
-    and not be a licensor they need to sign a waiver that they understand they do not
-    have voting rights, control or a share of profits.  This waiver remains in force
-    until the current licensors agree to add the licensor to this license as a licensor.
-    
-    The SpotADev software has a proprietary license. Please look at or request
-    spotadev_license.txt for further details.
-
-    Copyright (C) 2019 JavaSpeak
-
-    Email:  john.charles.dickerson@gmail.com
-
-    ========================================================================================
-    Author : John Dickerson
-    ========================================================================================
-*/
 package com.javaspeak.designpatterns.go4.behavioural.observer;
 
 import java.util.ArrayList;
 import java.util.List;
 
-
 /**
  * Text book description:
- * <ul>
- *      Observer: A way of notifying change to a number of classes. Define a one-to-many dependency 
- *      between objects so that when one object changes state, all its dependents are notified and 
- *      updated automatically.
- * </ul>
+ * <p>
+ * "Observer: A way of notifying change to a number of classes. Define a one-to-many dependency
+ * between objects so that when one object changes state, all its dependents are notified and
+ * updated automatically."
+ * <p>
  * This example uses the Observer pattern.
  * <p>
- * In the Observer pattern there is one Observable and there are many Observers.
+ * In the Observer pattern there is one Subject (called "Observable" in some texts) and there are
+ * many Listeners (called "Observers").  The names Subject and Listener are used here to avoid
+ * clashing with the deprecated {@code java.util.Observable} / {@code java.util.Observer} JDK
+ * types; the modern JDK equivalent of this pattern is {@link java.util.concurrent.Flow}.
  * <p>
- * The idea is that when something specific happens with the Observable all Observers are notified 
+ * The idea is that when something specific happens with the Subject all Listeners are notified
  * of this happening.
  * <p>
- * In this example we have a Observable called ObservableImpl which adds three different Observers 
- * to its list of Observers using its addObserver(..) method.  Each of the Observers implements 
- * Observer.
+ * In this example the application itself is the Subject.  It adds three different Listeners to
+ * its list of listeners using its addListener(..) method.
  * <p>
- * ObservableImpl then calls notifyObservers(ObservableEvent e) to inform all subscribed observers 
- * of a new happening.  The happening is encapsulated in a ObservableEventImpl which holds a 
- * messages. The message is "Hello Everyone!".
+ * The Subject then calls notifyListeners( SubjectEvent subjectEvent ) to inform all subscribed
+ * listeners of a new happening.  The happening is encapsulated in a MessageEvent record which
+ * holds a message. The message is "Hello Everyone!".
  * <p>
- * Internally the notifyObservers(..) method loops through all its subscribed Observers and 
- * calls the receiveObservableEvent(ObservableEvent e ) on each of them.
+ * Internally the notifyListeners(..) method loops through all its subscribed Listeners and
+ * calls receiveSubjectEvent( SubjectEvent subjectEvent ) on each of them.
  * <p>
- * Each Observer then retrieves the message from then ObservableEvent and prints it to the console.
- * 
- * @author John Dickerson - 22 Feb 2020
+ * Each Listener then retrieves the message from the SubjectEvent and remembers it.
+ *
+ * @author John Dickerson - 22 February 2020
  */
-public class ObserverApplication implements Observable {
+public class ObserverApplication implements Subject {
 
-    List<Observer> observers = new ArrayList<Observer>();
+    private final List<Listener> listeners = new ArrayList<>();
 
-    @Override
-    public void addObserver( Observer observer ) {
-
-        observers.add( observer );
+    /**
+     * Creates the example application, initially with no subscribed listeners.
+     */
+    public ObserverApplication() {
     }
 
 
     @Override
-    public void notifyObservers( ObservableEvent observableEvent ) {
+    public void addListener( Listener listener ) {
 
-        for ( Observer observer : observers ) {
+        listeners.add( listener );
+    }
 
-            observer.receiveObservableEvent( observableEvent );
+
+    @Override
+    public void removeListener( Listener listener ) {
+
+        listeners.remove( listener );
+    }
+
+
+    @Override
+    public void notifyListeners( SubjectEvent subjectEvent ) {
+
+        for ( Listener listener : listeners ) {
+
+            listener.receiveSubjectEvent( subjectEvent );
         }
     }
 
 
-    public void runExample() {
+    /**
+     * Runs the example: subscribes three listeners, publishes an event and reports which
+     * listener received which message.
+     *
+     * @return a report of the messages each listener received
+     */
+    public String runExample() {
 
-        // This class is the Observable
+        // This class is the Subject
 
-        // First we create some Observers
-        Observer observerOne = new ObserverImpl( "ObserverOne" );
-        Observer observerTwo = new ObserverImpl( "ObserverTwo" );
-        Observer observerThree = new ObserverImpl( "ObserverTwo" );
+        // First we create some Listeners
+        MessageListener listenerOne = new MessageListener( "ListenerOne" );
+        MessageListener listenerTwo = new MessageListener( "ListenerTwo" );
+        MessageListener listenerThree = new MessageListener( "ListenerThree" );
 
-        // Next we subscribe those observers so that they are observing the Observable. "Observing" 
-        // in this example means they are waiting for ObservavleEvents. In other words the Observers 
-        // are waiting for their receiveObservableEvent(..) method to be called.
-        addObserver( observerOne );
-        addObserver( observerTwo );
-        addObserver( observerThree );
+        // Next we subscribe those listeners so that they are observing the Subject. "Observing"
+        // in this example means they are waiting for SubjectEvents. In other words the Listeners
+        // are waiting for their receiveSubjectEvent(..) method to be called.
+        addListener( listenerOne );
+        addListener( listenerTwo );
+        addListener( listenerThree );
 
-        // The Observable (this class) loops through its sunscribed observers and calls 
-        // receiveObservableEvent(..) on each of them. A ObservableEvent is passed to each of the 
-        // Observers which has the message, "Hello Everyone!" in it.  The Observers in turn print 
-        // the message to the console.
-        notifyObservers( new ObservableEventImpl( "Hello Everyone!" ) );
+        // The Subject (this class) loops through its subscribed listeners and calls
+        // receiveSubjectEvent(..) on each of them. A SubjectEvent is passed to each of the
+        // Listeners which has the message, "Hello Everyone!" in it.
+        notifyListeners( new MessageEvent( "Hello Everyone!" ) );
+
+        var report = new StringBuilder();
+
+        for ( MessageListener listener :
+                List.of( listenerOne, listenerTwo, listenerThree ) ) {
+
+            report.append( listener.getListenerName() )
+                    .append( " received " )
+                    .append( listener.getReceivedMessages() )
+                    .append( '\n' );
+        }
+
+        return report.toString();
     }
 
 
+    /**
+     * Runs the example and prints its output.
+     *
+     * @param args not used
+     */
     public static void main( String[] args ) {
 
         ObserverApplication application = new ObserverApplication();
-        application.runExample();
+        System.out.println( application.runExample() );
     }
 }

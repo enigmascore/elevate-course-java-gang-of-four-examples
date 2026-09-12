@@ -1,58 +1,60 @@
-/*
-    =======================================================================================
-    This code is part of SpotADev.
-
-    SpotADev is e-commerce software for East Africa. SpotADev is a design from JavaSpeak.
-    JavaSpeak is a name given to a collective of developers managed by John Dickerson.
-    
-    The following were the licensors of SpotADev at the time this file was 
-    created / last edited:
-    
-    John Dickerson, Ronald Kasaija, Joel Mumo, Stephen Juma, Stephen Mwanzi, Jackline Gitari, 
-    Samuel Kisilu, Nixon Chebii, Mercy Chepkoech
-    
-    The individual voting rights / control / share of profits to the individual developers 
-    is roughly proportional to their contribution.
-    
-    Additional Licensors may be added to this license if the licensors agree to it based
-    on their voting rights.   In the case that a contributor is to work on the project
-    and not be a licensor they need to sign a waiver that they understand they do not
-    have voting rights, control or a share of profits.  This waiver remains in force
-    until the current licensors agree to add the licensor to this license as a licensor.
-    
-    The SpotADev software has a proprietary license. Please look at or request
-    spotadev_license.txt for further details.
-
-    Copyright (C) 2019 JavaSpeak
-
-    Email:  john.charles.dickerson@gmail.com
-
-    ========================================================================================
-    Author : John Dickerson
-    ========================================================================================
-*/
 package com.javaspeak.designpatterns.go4.creational.prototype;
 
 /**
- * Abstract class which provides clone functionality and drawing functionality for a Shape.
+ * Concrete base class which provides copy functionality and drawing functionality for a Shape.
+ * <p>
+ * Copies are made with a copy constructor instead of the legacy Cloneable / clone() mechanism.
+ * Subclasses override the copy() method to call their own copy constructor so that a copy has
+ * the same runtime type as its prototype.
  *
- * @author John Dickerson - 24 Feb 2020
+ * @author John Dickerson - 24 February 2020
  */
-public class Shape implements Cloneable {
+public class Shape {
 
+    /**
+     * The pixel representation of the Shape. Populated by subclass constructors.
+     */
     protected String pixels;
 
-    protected Object clone() throws CloneNotSupportedException {
+    /**
+     * Creates a Shape with no pixels. Subclasses populate the pixels in their own constructors.
+     */
+    public Shape() {
 
-        return super.clone();
     }
 
 
     /**
-     * Draws the pixel representation of the Shape
+     * Copy constructor which copies the pixels of the source Shape.
+     *
+     * @param source
+     *      the Shape to copy
      */
-    public void draw() {
+    protected Shape( Shape source ) {
 
-        System.out.println( pixels );
+        this.pixels = source.pixels;
+    }
+
+
+    /**
+     * Returns a copy of this Shape. Subclasses override this method to return a copy created
+     * with their own copy constructor.
+     *
+     * @return a new Shape with the same pixels as this Shape
+     */
+    public Shape copy() {
+
+        return new Shape( this );
+    }
+
+
+    /**
+     * Draws the pixel representation of the Shape.
+     *
+     * @return the pixel representation of the Shape
+     */
+    public String draw() {
+
+        return pixels;
     }
 }
