@@ -1,50 +1,21 @@
-/*
-    =======================================================================================
-    This code is part of SpotADev.
-
-    SpotADev is e-commerce software for East Africa. SpotADev is a design from JavaSpeak.
-    JavaSpeak is a name given to a collective of developers managed by John Dickerson.
-    
-    The following were the licensors of SpotADev at the time this file was 
-    created / last edited:
-    
-    John Dickerson, Ronald Kasaija, Joel Mumo, Stephen Juma, Stephen Mwanzi, Jackline Gitari, 
-    Samuel Kisilu, Nixon Chebii, Mercy Chepkoech
-    
-    The individual voting rights / control / share of profits to the individual developers 
-    is roughly proportional to their contribution.
-    
-    Additional Licensors may be added to this license if the licensors agree to it based
-    on their voting rights.   In the case that a contributor is to work on the project
-    and not be a licensor they need to sign a waiver that they understand they do not
-    have voting rights, control or a share of profits.  This waiver remains in force
-    until the current licensors agree to add the licensor to this license as a licensor.
-    
-    The SpotADev software has a proprietary license. Please look at or request
-    spotadev_license.txt for further details.
-
-    Copyright (C) 2019 JavaSpeak
-
-    Email:  john.charles.dickerson@gmail.com
-
-    ========================================================================================
-    Author : John Dickerson
-    ========================================================================================
-*/
 package com.javaspeak.designpatterns.go4.structural.bridge;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class extends the AbstractShapeBridge and adds functionality.
  * <p>
- * The added functionality is a drawShape() method
+ * The added functionality is a drawShape() method.
  *
- * @author John Dickerson - 24 Feb 2020
+ * @author John Dickerson - 24 February 2020
  */
 public class ShapeBridgeImpl extends AbstractShapeBridge {
 
+    private static final Logger logger = LoggerFactory.getLogger( ShapeBridgeImpl.class );
+
     /**
-     * Constructor
+     * Constructor.  Plugs a TriangleBuilder into the bridge.
      */
     public ShapeBridgeImpl() {
 
@@ -53,16 +24,15 @@ public class ShapeBridgeImpl extends AbstractShapeBridge {
 
 
     /**
-     * Provides additional method which application can call.
+     * Provides an additional method which the application can call.
      * <p>
-     * Extends functionality of AbstractShapeBridge
+     * Extends the functionality of AbstractShapeBridge.
+     *
+     * @return the drawn shape as ASCII art
      */
-    public void drawShape() {
+    public String drawShape() {
 
-        System.out.println(
-                "Drawing a Shape using " + this.shapeBuilder.getClass().getName() );
-
-        this.buildShape().draw();
+        logger.info( "Drawing a Shape using {}", shapeBuilder.getClass().getName() );
+        return buildShape().draw();
     }
-
 }

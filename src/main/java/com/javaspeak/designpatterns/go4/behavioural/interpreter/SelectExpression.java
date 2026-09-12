@@ -1,53 +1,25 @@
-/*
-    =======================================================================================
-    This code is part of SpotADev.
-
-    SpotADev is e-commerce software for East Africa. SpotADev is a design from JavaSpeak.
-    JavaSpeak is a name given to a collective of developers managed by John Dickerson.
-    
-    The following were the licensors of SpotADev at the time this file was 
-    created / last edited:
-    
-    John Dickerson, Ronald Kasaija, Joel Mumo, Stephen Juma, Stephen Mwanzi, Jackline Gitari, 
-    Samuel Kisilu, Nixon Chebii, Mercy Chepkoech
-    
-    The individual voting rights / control / share of profits to the individual developers 
-    is roughly proportional to their contribution.
-    
-    Additional Licensors may be added to this license if the licensors agree to it based
-    on their voting rights.   In the case that a contributor is to work on the project
-    and not be a licensor they need to sign a waiver that they understand they do not
-    have voting rights, control or a share of profits.  This waiver remains in force
-    until the current licensors agree to add the licensor to this license as a licensor.
-    
-    The SpotADev software has a proprietary license. Please look at or request
-    spotadev_license.txt for further details.
-
-    Copyright (C) 2019 JavaSpeak
-
-    Email:  john.charles.dickerson@gmail.com
-
-    ========================================================================================
-    Author : John Dickerson
-    ========================================================================================
-*/
 package com.javaspeak.designpatterns.go4.behavioural.interpreter;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.StringTokenizer;
 
 /**
- * Used for parsing select "Object Query Language (oql)" statements.
- * 
- * @author John Dickerson - 21 Feb 2020
+ * Used for parsing select "Object Query Language (oql)" statements of the form:
+ * <p>
+ * {@code select <fieldName>, <fieldName>, ... from <className>}
+ *
+ * @author John Dickerson - 21 February 2020
  */
-public class SelectExpression implements Expression {
+public final class SelectExpression implements Expression {
 
-    // select statement to parse
-    private String selectStatement;
+    private final String selectStatement;
 
-    // select statement is passed through constructor
+    /**
+     * The select statement is passed through the constructor.
+     *
+     * @param selectStatement
+     *      Select statement to be parsed and executed
+     */
     public SelectExpression( String selectStatement ) {
 
         this.selectStatement = selectStatement;
@@ -55,47 +27,41 @@ public class SelectExpression implements Expression {
 
 
     @Override
-    public List<Value> interpret( InterpreterContext context ) throws Exception {
+    public List<Value> interpret( InterpreterContext context ) {
 
-        // tokenize statement using spaces and commas as seperators
-        StringTokenizer wordTokenizer = new StringTokenizer( selectStatement, ", " );
+        // split the statement into words using spaces and commas as separators
+        String[] words = selectStatement.trim().split( "[,\\s]+" );
 
-        // the first token is "select"
-        wordTokenizer.nextToken();
+        // the first word is "select"; the words up to "from" are the fieldNames to select and
+        // the word after "from" is the className
+        List<String> fieldNames = new ArrayList<>();
+        int index = 1;
 
-        String tokenString;
+        while ( index < words.length && !words[index].equalsIgnoreCase( "from" ) ) {
 
-        // creates a list to hold the fieldNames
-        List<String> fieldNames =
-                new ArrayList<String>( wordTokenizer.countTokens() );
-
-        // add all tokens before the toek "from" to the fieldNames list
-        while ( wordTokenizer.hasMoreTokens() &&
-                !( tokenString = wordTokenizer.nextToken() ).equals( "from" ) ) {
-
-            fieldNames.add( tokenString );
+            fieldNames.add( words[index] );
+            index++;
         }
 
-        // the next token is the className
-        String className = wordTokenizer.nextToken();
+        if ( words.length < 4 || !words[0].equalsIgnoreCase( "select" ) ||
+                fieldNames.isEmpty() || index + 1 >= words.length ) {
 
-        // initialize the list of field values to return
-        List<Value> fieldValues = new ArrayList<Value>( fieldNames.size() );
+            throw new InterpreterException(
+                    "Select statements must have the form \"select <fieldName>, ... from " +
+                            "<className>\" but was: " + selectStatement );
+        }
 
-        Value value;
+        String className = words[index + 1];
+
+        // make a call to the InterpreterContext for each fieldName to retrieve the field value
+        // from the object registered under the className
+        List<Value> fieldValues = new ArrayList<>( fieldNames.size() );
 
         for ( String fieldName : fieldNames ) {
 
-            // make a call to the InterpreterContext to retrieve the field value
-            // for the field in the specified object registered with the
-            // InterpreterContext
-            value = new Value( context.getFieldValue( className, fieldName ) );
-
-            // add the field value to the list of Values to return.
-            fieldValues.add( value );
+            fieldValues.add( new Value( context.getFieldValue( className, fieldName ) ) );
         }
 
-        // return the field values
         return fieldValues;
     }
 }

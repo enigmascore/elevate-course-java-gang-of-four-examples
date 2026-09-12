@@ -1,72 +1,53 @@
-/*
-    =======================================================================================
-    This code is part of SpotADev.
-
-    SpotADev is e-commerce software for East Africa. SpotADev is a design from JavaSpeak.
-    JavaSpeak is a name given to a collective of developers managed by John Dickerson.
-    
-    The following were the licensors of SpotADev at the time this file was 
-    created / last edited:
-    
-    John Dickerson, Ronald Kasaija, Joel Mumo, Stephen Juma, Stephen Mwanzi, Jackline Gitari, 
-    Samuel Kisilu, Nixon Chebii, Mercy Chepkoech
-    
-    The individual voting rights / control / share of profits to the individual developers 
-    is roughly proportional to their contribution.
-    
-    Additional Licensors may be added to this license if the licensors agree to it based
-    on their voting rights.   In the case that a contributor is to work on the project
-    and not be a licensor they need to sign a waiver that they understand they do not
-    have voting rights, control or a share of profits.  This waiver remains in force
-    until the current licensors agree to add the licensor to this license as a licensor.
-    
-    The SpotADev software has a proprietary license. Please look at or request
-    spotadev_license.txt for further details.
-
-    Copyright (C) 2019 JavaSpeak
-
-    Email:  john.charles.dickerson@gmail.com
-
-    ========================================================================================
-    Author : John Dickerson
-    ========================================================================================
-*/
 package com.javaspeak.designpatterns.go4.creational.abstractfactory;
 
 /**
- * The ShapeSelector is responsible for returning the correct ShapeFactory. The ShapeFactory can 
+ * The ShapeSelector is responsible for returning the correct ShapeFactory. The ShapeFactory can
  * be either a SquareFactory or a TriangleFactory.
  *
- * @author John Dickerson - 22 Feb 2020
+ * @author John Dickerson - 22 February 2020
  */
 public class ShapeSelector {
 
-    enum ShapeType {
+    /**
+     * The types of Shape which the ShapeSelector can provide a ShapeFactory for.
+     */
+    public enum ShapeType {
 
-        SQUARE, TRIANGLE;
+        /**
+         * A four sided shape whose sides all have the same length.
+         */
+        SQUARE,
+
+        /**
+         * A three sided shape.
+         */
+        TRIANGLE
     }
 
+
     /**
-     * Returns the appropriate ShapeFactory for the ShapeType
+     * Utility class which is not instantiated.
+     */
+    private ShapeSelector() {
+
+    }
+
+
+    /**
+     * Returns the appropriate ShapeFactory for the ShapeType.
      *
-     * @param shapeType 
+     * @param shapeType
      *      Enum specifying Shape type
-     *      
-     * @return 
+     *
+     * @return
      *      Factory that implements ShapeFactory
      */
     public static ShapeFactory getShapeFactory( ShapeType shapeType ) {
 
-        switch ( shapeType ) {
+        return switch ( shapeType ) {
 
-            case TRIANGLE:
-                return new TriangleFactory();
-
-            case SQUARE:
-                return new SquareFactory();
-
-            default:
-                throw new UnsupportedOperationException( "Not supported" );
-        }
+            case SQUARE -> new SquareFactory();
+            case TRIANGLE -> new TriangleFactory();
+        };
     }
 }

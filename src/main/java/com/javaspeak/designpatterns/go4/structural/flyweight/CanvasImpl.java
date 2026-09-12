@@ -1,57 +1,31 @@
-/*
-    =======================================================================================
-    This code is part of SpotADev.
-
-    SpotADev is e-commerce software for East Africa. SpotADev is a design from JavaSpeak.
-    JavaSpeak is a name given to a collective of developers managed by John Dickerson.
-    
-    The following were the licensors of SpotADev at the time this file was 
-    created / last edited:
-    
-    John Dickerson, Ronald Kasaija, Joel Mumo, Stephen Juma, Stephen Mwanzi, Jackline Gitari, 
-    Samuel Kisilu, Nixon Chebii, Mercy Chepkoech
-    
-    The individual voting rights / control / share of profits to the individual developers 
-    is roughly proportional to their contribution.
-    
-    Additional Licensors may be added to this license if the licensors agree to it based
-    on their voting rights.   In the case that a contributor is to work on the project
-    and not be a licensor they need to sign a waiver that they understand they do not
-    have voting rights, control or a share of profits.  This waiver remains in force
-    until the current licensors agree to add the licensor to this license as a licensor.
-    
-    The SpotADev software has a proprietary license. Please look at or request
-    spotadev_license.txt for further details.
-
-    Copyright (C) 2019 JavaSpeak
-
-    Email:  john.charles.dickerson@gmail.com
-
-    ========================================================================================
-    Author : John Dickerson
-    ========================================================================================
-*/
 package com.javaspeak.designpatterns.go4.structural.flyweight;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * CanvasElements are added to this canvas and then rendered to System.out
+ * CanvasElements are added to this canvas and then rendered as an ASCII art string.
  *
- * @author John Dickerson - 23 Feb 2020
+ * @author John Dickerson - 23 February 2020
  */
 public class CanvasImpl implements Canvas {
 
-    private List<CanvasElement> canvasElements = new ArrayList<CanvasElement>();
+    private final List<CanvasElement> canvasElements = new ArrayList<>();
 
     /**
-     * Works out the dimension of the Canvas required to accomodate all the Canvas Elements
+     * Creates an empty canvas.
+     */
+    public CanvasImpl() {
+    }
+
+
+    /**
+     * Works out the dimension of the Canvas required to accommodate all the Canvas Elements.
      *
-     * @param canvasElements  
+     * @param canvasElements
      *      CanvasElements which will be added to the Canvas
      *
-     * @return 
+     * @return
      *      the Dimension of the Canvas
      */
     private Dimension getCanvasDimension( List<CanvasElement> canvasElements ) {
@@ -61,23 +35,11 @@ public class CanvasImpl implements Canvas {
 
         for ( CanvasElement canvasElement : canvasElements ) {
 
-            int shapeLength =
-                    canvasElement.getShape().points.length +
-                            canvasElement.getYcoordinate();
+            height = Math.max(
+                    height, canvasElement.shape().getHeight() + canvasElement.yCoordinate() );
 
-            if ( shapeLength > height ) {
-
-                height = shapeLength;
-            }
-
-            int shapeWidth =
-                    canvasElement.getShape().points[0].length +
-                            canvasElement.getXcoordinate();
-
-            if ( shapeWidth > width ) {
-
-                width = shapeWidth;
-            }
+            width = Math.max(
+                    width, canvasElement.shape().getWidth() + canvasElement.xCoordinate() );
         }
 
         return new Dimension( width, height );
@@ -85,55 +47,59 @@ public class CanvasImpl implements Canvas {
 
 
     /**
-     * Renders a CanvasElement on the canvas. This involves copying the pixels of the shape onto 
+     * Renders a CanvasElement on the canvas. This involves copying the pixels of the shape onto
      * the canvasPixels array.
      *
      * @param canvasElement
+     *      The CanvasElement to render
+     *
      * @param canvasPixels
+     *      The canvas pixels to copy the shape's pixels onto
      */
     private void render( CanvasElement canvasElement, int[][] canvasPixels ) {
 
-        int[][] points = canvasElement.getShape().points;
+        Shape shape = canvasElement.shape();
 
-        for ( int y = 0; y < points.length; y++ ) {
+        for ( int y = 0; y < shape.getHeight(); y++ ) {
 
-            for ( int x = 0; x < points[y].length; x++ ) {
+            for ( int x = 0; x < shape.getWidth(); x++ ) {
 
-                canvasPixels[y + canvasElement.getYcoordinate()][x + canvasElement
-                        .getXcoordinate()] =
-                                points[y][x];
+                if ( shape.isPixelSet( y, x ) ) {
+
+                    canvasPixels[y + canvasElement.yCoordinate()][x
+                            + canvasElement.xCoordinate()] = 1;
+                }
             }
         }
-
     }
 
 
     /**
-     * Paints the canvas pixels to System.out
+     * Paints the canvas pixels as an ASCII art string.
      *
-     * @param canvasPixels 
-     *      The canvas pixels to paint to System.out
+     * @param canvasPixels
+     *      The canvas pixels to paint
+     *
+     * @return
+     *      the painted canvas, one line per pixel row
      */
-    private void paint( int[][] canvasPixels ) {
+    private String paint( int[][] canvasPixels ) {
 
-        for ( int y = 0; y < canvasPixels.length; y++ ) {
+        var canvas = new StringBuilder();
 
-            StringBuilder sb = new StringBuilder();
+        for ( int[] row : canvasPixels ) {
 
-            for ( int x = 0; x < canvasPixels[y].length; x++ ) {
+            var line = new StringBuilder();
 
-                if ( canvasPixels[y][x] == 1 ) {
+            for ( int pixel : row ) {
 
-                    sb.append( canvasPixels[y][x] );
-                }
-                else {
-
-                    sb.append( " " );
-                }
+                line.append( pixel == 1 ? "1" : " " );
             }
 
-            System.out.println( sb.toString() );
+            canvas.append( line.toString().stripTrailing() ).append( '\n' );
         }
+
+        return canvas.toString();
     }
 
 
@@ -145,18 +111,17 @@ public class CanvasImpl implements Canvas {
 
 
     @Override
-    public void render() {
+    public String render() {
 
         Dimension canvasDimension = getCanvasDimension( canvasElements );
 
-        int[][] canvasPixels =
-                new int[canvasDimension.getHeight()][canvasDimension.getWidth()];
+        int[][] canvasPixels = new int[canvasDimension.height()][canvasDimension.width()];
 
         for ( CanvasElement canvasElement : canvasElements ) {
 
             render( canvasElement, canvasPixels );
         }
 
-        paint( canvasPixels );
+        return paint( canvasPixels );
     }
 }

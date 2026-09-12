@@ -1,75 +1,90 @@
-/*
-    =======================================================================================
-    This code is part of SpotADev.
-
-    SpotADev is e-commerce software for East Africa. SpotADev is a design from JavaSpeak.
-    JavaSpeak is a name given to a collective of developers managed by John Dickerson.
-    
-    The following were the licensors of SpotADev at the time this file was 
-    created / last edited:
-    
-    John Dickerson, Ronald Kasaija, Joel Mumo, Stephen Juma, Stephen Mwanzi, Jackline Gitari, 
-    Samuel Kisilu, Nixon Chebii, Mercy Chepkoech
-    
-    The individual voting rights / control / share of profits to the individual developers 
-    is roughly proportional to their contribution.
-    
-    Additional Licensors may be added to this license if the licensors agree to it based
-    on their voting rights.   In the case that a contributor is to work on the project
-    and not be a licensor they need to sign a waiver that they understand they do not
-    have voting rights, control or a share of profits.  This waiver remains in force
-    until the current licensors agree to add the licensor to this license as a licensor.
-    
-    The SpotADev software has a proprietary license. Please look at or request
-    spotadev_license.txt for further details.
-
-    Copyright (C) 2019 JavaSpeak
-
-    Email:  john.charles.dickerson@gmail.com
-
-    ========================================================================================
-    Author : John Dickerson
-    ========================================================================================
-*/
 package com.javaspeak.designpatterns.go4.behavioural.chainofresponsibility;
 
+import java.util.List;
 
 /**
  * Text book description:
- * <ul>
- *   Chain of Responsibility: A way of passing a request between a chain of objects. Avoid 
- *    coupling the sender of a request to its receiver by giving more than one object a chance to 
- *    handle the request. Chain the receiving objects and pass the request along the chain until 
- *    an object handles it.
- * </ul>
- * The chain of responsibility pattern is about a chain of decorators each decorator decorating 
- * another decorator. The chain of responsibility pattern accentuates the chaining while the 
- * decorator pattern accentuates how a class can decorate another class to provide extra 
- * functionality without extending it.
  * <p>
- * In the chain of responsibility pattern the order that the decorators are chained is considered 
- * important while with the decorator pattern it is more about adding extra behaviour to the class 
- * and the ordering or the fact that multiple decorators can be chained together is not so 
- * important.
+ * "Chain of Responsibility: A way of passing a request between a chain of objects. Avoid
+ * coupling the sender of a request to its receiver by giving more than one object a chance to
+ * handle the request. Chain the receiving objects and pass the request along the chain until an
+ * object handles it."
  * <p>
- * The Chain of Responsibility pattern is structurally like a Decorator pattern. It is different 
- * only in emphasis. It is behavioural pattern and describes the behaviour of chaining multiple 
- * decorators together.
+ * This example uses the Chain of Responsibility pattern.
  * <p>
- * Note that the Chain of Responsibility pattern is popular in Servlet Engines.  Servlet Filters 
- * can be chained together to work on the request.
+ * The example models purchase approval in a company.  The Handler role is played by
+ * {@link Approver}: each Approver holds a link to the next Approver in the chain and an
+ * approval limit.  When an Approver receives a {@link PurchaseRequest} it either approves it
+ * (if the amount is within its limit) or passes the request along the chain to the next
+ * Approver.
  * <p>
- * As the Chain of Responsibility pattern is in all intense and purposes the same structurally as 
- * the Decorator pattern you can look at the code examples in the Decorator pattern 
- * (ApplicationDecorator).
- * 
- * @see com.javaspeak.designpatterns.go4.structural.decorator.DecoratorApplication
- * 
+ * The chain built here is Team Lead (limit 1,000), then Manager (limit 10,000), then Director
+ * (limit 100,000).  The sender only ever talks to the head of the chain - it neither knows nor
+ * cares which Approver ends up handling each request.
+ * <p>
+ * Four requests are sent down the chain: a laptop for 800 (handled by the Team Lead), a team
+ * offsite for 7,500 (handled by the Manager), a server cluster for 60,000 (handled by the
+ * Director) and an office building for 750,000 which exceeds every limit, so it falls off the
+ * end of the chain unhandled and is reported as such.
+ * <p>
+ * A well known example of this pattern is the Servlet Filter chain in Servlet engines, where
+ * each Filter works on the request and then passes it along the chain.
+ *
  * @author John Dickerson - 21 February 2020
  */
 public class ChainOfResponsibilityApplication {
 
-    // As explained above, while the "Chain of Responsibility" design pattern is a behavioural 
-    // pattern, in code it is the same as the structural "Decorator" design pattern.  Therefore
-    // take a look at ApplicationDecorator.
+    /**
+     * Default constructor.
+     */
+    public ChainOfResponsibilityApplication() {
+
+    }
+
+
+    /**
+     * Runs the example: builds the approval chain, sends four purchase requests down it and
+     * reports which approver handled which request.
+     *
+     * @return a report of who approved (or could not approve) each request
+     */
+    public String runExample() {
+
+        // Build the chain: Team Lead -> Manager -> Director
+        Approver approvalChain =
+                new TeamLeadApprover( new ManagerApprover( new DirectorApprover( null ) ) );
+
+        List<PurchaseRequest> purchaseRequests = List.of(
+                new PurchaseRequest( "laptop", 800 ),
+                new PurchaseRequest( "team offsite", 7_500 ),
+                new PurchaseRequest( "server cluster", 60_000 ),
+                new PurchaseRequest( "office building", 750_000 ) );
+
+        var report = new StringBuilder();
+
+        for ( PurchaseRequest purchaseRequest : purchaseRequests ) {
+
+            // The sender only talks to the head of the chain; the request travels along the
+            // chain until an Approver with a large enough limit handles it
+            report.append(
+                    approvalChain.approve( purchaseRequest ).orElse(
+                            "Nobody could approve " + purchaseRequest.description() +
+                                    " costing " + purchaseRequest.amount() ) )
+                    .append( '\n' );
+        }
+
+        return report.toString();
+    }
+
+
+    /**
+     * Runs the example and prints its report.
+     *
+     * @param args not used
+     */
+    public static void main( String[] args ) {
+
+        ChainOfResponsibilityApplication application = new ChainOfResponsibilityApplication();
+        System.out.println( application.runExample() );
+    }
 }

@@ -1,62 +1,53 @@
-/*
-    =======================================================================================
-    This code is part of SpotADev.
-
-    SpotADev is e-commerce software for East Africa. SpotADev is a design from JavaSpeak.
-    JavaSpeak is a name given to a collective of developers managed by John Dickerson.
-    
-    The following were the licensors of SpotADev at the time this file was 
-    created / last edited:
-    
-    John Dickerson, Ronald Kasaija, Joel Mumo, Stephen Juma, Stephen Mwanzi, Jackline Gitari, 
-    Samuel Kisilu, Nixon Chebii, Mercy Chepkoech
-    
-    The individual voting rights / control / share of profits to the individual developers 
-    is roughly proportional to their contribution.
-    
-    Additional Licensors may be added to this license if the licensors agree to it based
-    on their voting rights.   In the case that a contributor is to work on the project
-    and not be a licensor they need to sign a waiver that they understand they do not
-    have voting rights, control or a share of profits.  This waiver remains in force
-    until the current licensors agree to add the licensor to this license as a licensor.
-    
-    The SpotADev software has a proprietary license. Please look at or request
-    spotadev_license.txt for further details.
-
-    Copyright (C) 2019 JavaSpeak
-
-    Email:  john.charles.dickerson@gmail.com
-
-    ========================================================================================
-    Author : John Dickerson
-    ========================================================================================
-*/
 package com.javaspeak.designpatterns.go4.behavioural.templatemethod;
 
 /**
- * The Template Method Pattern uses an abstract class. The abstract class has a method 
+ * Text book description:
+ * <p>
+ * "Template Method: Defer the exact steps of an algorithm to a subclass. Define the skeleton of
+ * an algorithm in an operation, deferring some steps to subclasses.  Template Method lets
+ * subclasses redefine certain steps of an algorithm without changing the algorithm's structure."
+ * <p>
+ * The Template Method Pattern uses an abstract class. The abstract class has a method
  * ( called buildPage() in this example ) which calls the abstract methods in the correct order.
  * <p>
  * The exact implementation of the abstract methods is left to sub classes of the abstract class.
  * <p>
- * In this example AbstractHtmlPage is extended by the class HomePage to provide implementation of 
- * the abstract methods, getTitle(), getHeader(), getContent(), getFooter();
+ * In this example AbstractHtmlPage is extended by the class HomePage to provide implementation of
+ * the abstract methods, getTitle(), getHeader(), getContent() and getFooter().
  *
- * @author John Dickerson - 22 Feb 2020
+ * @author John Dickerson - 22 February 2020
  */
 public class TemplateMethodApplication {
 
-    private void runExample() throws FormatException {
+    /**
+     * Creates a TemplateMethodApplication.
+     */
+    public TemplateMethodApplication() {
 
-        AbstractHtmlPage htmlPage = new HomePage();
-        String html = htmlPage.getHtml();
-        System.out.println( html );
     }
 
 
-    public static void main( String[] args ) throws FormatException {
+    /**
+     * Runs the example: builds the HomePage using the template method of AbstractHtmlPage and
+     * returns the formatted html.
+     *
+     * @return the formatted html of the HomePage
+     */
+    public String runExample() {
+
+        AbstractHtmlPage htmlPage = new HomePage();
+        return htmlPage.getHtml();
+    }
+
+
+    /**
+     * Runs the example from the command line and prints the result.
+     *
+     * @param args not used
+     */
+    public static void main( String[] args ) {
 
         TemplateMethodApplication application = new TemplateMethodApplication();
-        application.runExample();
+        System.out.println( application.runExample() );
     }
 }

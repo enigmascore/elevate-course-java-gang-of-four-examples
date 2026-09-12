@@ -1,43 +1,10 @@
-/*
-    =======================================================================================
-    This code is part of SpotADev.
-
-    SpotADev is e-commerce software for East Africa. SpotADev is a design from JavaSpeak.
-    JavaSpeak is a name given to a collective of developers managed by John Dickerson.
-    
-    The following were the licensors of SpotADev at the time this file was 
-    created / last edited:
-    
-    John Dickerson, Ronald Kasaija, Joel Mumo, Stephen Juma, Stephen Mwanzi, Jackline Gitari, 
-    Samuel Kisilu, Nixon Chebii, Mercy Chepkoech
-    
-    The individual voting rights / control / share of profits to the individual developers 
-    is roughly proportional to their contribution.
-    
-    Additional Licensors may be added to this license if the licensors agree to it based
-    on their voting rights.   In the case that a contributor is to work on the project
-    and not be a licensor they need to sign a waiver that they understand they do not
-    have voting rights, control or a share of profits.  This waiver remains in force
-    until the current licensors agree to add the licensor to this license as a licensor.
-    
-    The SpotADev software has a proprietary license. Please look at or request
-    spotadev_license.txt for further details.
-
-    Copyright (C) 2019 JavaSpeak
-
-    Email:  john.charles.dickerson@gmail.com
-
-    ========================================================================================
-    Author : John Dickerson
-    ========================================================================================
-*/
 package com.javaspeak.designpatterns.go4.creational.builder;
 
-
 /**
- * The Shape class models different shapes
+ * The Shape class models different shapes as a grid of points, together with the level the shape
+ * is painted at.
  *
- * @author John Dickerson - 22 Feb 2020
+ * @author John Dickerson - 22 February 2020
  */
 public class Shape {
 
@@ -55,11 +22,63 @@ public class Shape {
     //     00001001
     //     00001001
     //     00001111
-    protected int[][] points;
+    private int[][] points;
 
     // 0 means paint first, larger numbers will be painted next
-    protected int paintLevel;
+    private int paintLevel;
 
-    // Name of shape
-    protected String name;
+    /**
+     * Creates an empty Shape for a ShapeBuilder to populate.
+     */
+    public Shape() {
+
+    }
+
+
+    /**
+     * Returns the grid of points modelling the Shape. A value of 1 means the point is part of
+     * the Shape.
+     *
+     * @return the grid of points
+     */
+    public int[][] getPoints() {
+
+        return points;
+    }
+
+
+    /**
+     * Sets the grid of points modelling the Shape.
+     *
+     * @param points
+     *      the grid of points. A value of 1 means the point is part of the Shape
+     */
+    public void setPoints( int[][] points ) {
+
+        this.points = points;
+    }
+
+
+    /**
+     * Returns the level the Shape is painted at. Shapes on level 0 are painted before Shapes on
+     * a higher level.
+     *
+     * @return the paint level
+     */
+    public int getPaintLevel() {
+
+        return paintLevel;
+    }
+
+
+    /**
+     * Sets the level the Shape is painted at.
+     *
+     * @param paintLevel
+     *      the paint level. 0 means paint first, larger numbers will be painted next
+     */
+    public void setPaintLevel( int paintLevel ) {
+
+        this.paintLevel = paintLevel;
+    }
 }
